@@ -225,29 +225,69 @@ function initNavigation() {
   const mobileLinks = document.querySelectorAll('.mobile-nav-link');
 
   window.addEventListener('scroll', () => {
-    if (window.scrollY > 40) {
+    if (window.scrollY > 30) {
       header?.classList.add('scrolled');
     } else {
       header?.classList.remove('scrolled');
     }
   }, { passive: true });
 
+  function closeDrawer() {
+    if (!mobileDrawer || !mobileToggle) return;
+    mobileToggle.setAttribute('aria-expanded', 'false');
+    mobileDrawer.classList.remove('open');
+    mobileDrawer.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  function openDrawer() {
+    if (!mobileDrawer || !mobileToggle) return;
+    mobileToggle.setAttribute('aria-expanded', 'true');
+    mobileDrawer.classList.add('open');
+    mobileDrawer.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+
   if (mobileToggle && mobileDrawer) {
-    mobileToggle.addEventListener('click', () => {
+    mobileToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
       const isExpanded = mobileToggle.getAttribute('aria-expanded') === 'true';
-      mobileToggle.setAttribute('aria-expanded', !isExpanded);
-      mobileDrawer.classList.toggle('open');
-      mobileDrawer.setAttribute('aria-hidden', isExpanded);
-      document.body.style.overflow = isExpanded ? '' : 'hidden';
+      if (isExpanded) {
+        closeDrawer();
+      } else {
+        openDrawer();
+      }
     });
 
     mobileLinks.forEach(link => {
       link.addEventListener('click', () => {
-        mobileToggle.setAttribute('aria-expanded', 'false');
-        mobileDrawer.classList.remove('open');
-        mobileDrawer.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
+        closeDrawer();
       });
+    });
+
+    // Close on Escape Key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && mobileDrawer.classList.contains('open')) {
+        closeDrawer();
+      }
+    });
+
+    // Close on Outside Click
+    document.addEventListener('click', (e) => {
+      if (
+        mobileDrawer.classList.contains('open') &&
+        !mobileDrawer.contains(e.target) &&
+        !mobileToggle.contains(e.target)
+      ) {
+        closeDrawer();
+      }
+    });
+
+    // Reset when resizing to desktop
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 1024 && mobileDrawer.classList.contains('open')) {
+        closeDrawer();
+      }
     });
   }
 }
